@@ -6,7 +6,6 @@ class SearchBar extends Component {
     inputValue: '',
   };
   setInputValue = event => {
-    // event.preventDefault();
     this.setState({ inputValue: event.currentTarget.value });
   };
   onSubmitSearchForm = e => {
