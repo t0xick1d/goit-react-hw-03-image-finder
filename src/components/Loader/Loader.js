@@ -1,7 +1,7 @@
 import React from 'react';
 import { ThreeDots } from 'react-loader-spinner';
 
-const Loader = ({ visible }) => {
+const Loader = () => {
   return (
     <div>
       <ThreeDots
@@ -14,7 +14,7 @@ const Loader = ({ visible }) => {
           justifyContent: 'center',
         }}
         wrapperClassName=""
-        visible={visible}
+        visible={true}
       />
     </div>
   );

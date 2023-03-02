@@ -11,25 +11,34 @@ class App extends Component {
     listImg: [],
     status: '',
     modal: '',
+    page: 1,
+    inputValue: '',
   };
   componentDidMount() {
     window.addEventListener('keydown', e => {
       if (e.code === 'Escape') {
         this.setState({
           modal: '',
-          status: '',
+          status: 'showImg',
         });
       }
     });
   }
   onSubmitSearch = value => {
-    this.setState({ status: 'loader' });
+    this.setState({ status: 'loader', inputValue: value });
     fetch(
       `https://pixabay.com/api/?q=${value}&page=${1}&key=32947262-816ad506c9db86c30ae5e3e11&image_type=photo&orientation=horizontal&per_page=12`
     )
       .then(res => res.json())
       .then(data => {
-        this.setState({ listImg: data.hits, status: '' });
+        this.setState(() => {
+          if (data.total <= 12) {
+            return { listImg: data.hits, status: 'lastPage' };
+          }
+          if (data.total > 12) {
+            return { listImg: data.hits, status: 'showImg' };
+          }
+        });
       });
   };
   showModalImg = url => {
@@ -38,19 +47,52 @@ class App extends Component {
 
   onCloseOverlay = event => {
     if (event.target === event.currentTarget) {
-      this.setState({ status: '', modal: '' });
+      this.setState({ status: 'showImg', modal: '' });
     }
+  };
+  onNextPage = () => {
+    fetch(
+      `https://pixabay.com/api/?q=${this.state.inputValue}&page=${
+        this.state.page + 1
+      }&key=32947262-816ad506c9db86c30ae5e3e11&image_type=photo&orientation=horizontal&per_page=12`
+    )
+      .then(res => res.json())
+      .then(data => {
+        this.setState(prevState => {
+          if (data.total <= 12) {
+            return {
+              listImg: [...prevState.listImg, ...data.hits],
+              status: 'lastPage',
+            };
+          }
+          if (data.total > 12) {
+            return {
+              listImg: [...prevState.listImg, ...data.hits],
+              status: 'showImg',
+              page: this.state.page + 1,
+            };
+          }
+        });
+      });
   };
   render() {
     return (
       <div className="App">
         <SearchBar onSubmitSearch={this.onSubmitSearch} />
-        {this.state.status === 'loader' && <Loader visible={true} />}
+        {this.state.status === 'loader' && <Loader />}
+        {this.state.status === 'showImg' ||
+        this.state.status === 'lastPage' ||
+        this.state.status === 'modal' ? (
+          <ImageGallery
+            listImg={this.state.listImg}
+            showModalImg={this.showModalImg}
+            status={this.state.status}
+            onClickNextPage={this.onNextPage}
+          />
+        ) : (
+          ''
+        )}
 
-        <ImageGallery
-          listImg={this.state.listImg}
-          showModalImg={this.showModalImg}
-        />
         {this.state.status === 'modal' && (
           <Modal url={this.state.modal} closeOverlay={this.onCloseOverlay} />
         )}
@@ -58,7 +100,5 @@ class App extends Component {
     );
   }
 }
-
-// just try gh-pages
 
 export default App;

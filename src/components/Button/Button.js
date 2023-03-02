@@ -1,7 +1,11 @@
 import React from 'react';
 
-const Button = props => {
-  return <div className="Button">Load more</div>;
+const Button = ({ onCLickButton }) => {
+  return (
+    <div className="Button" onClick={onCLickButton}>
+      Load more
+    </div>
+  );
 };
 
 export default Button;
